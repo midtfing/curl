@@ -1717,7 +1717,7 @@ static bool multi_handle_timeout(struct Curl_easy *data,
     if(data->conn) {
       /* Force connection closed if the connection has indeed been used */
       if(data->mstate > MSTATE_DO) {
-        streamclose(data->conn, "Disconnected with pending data");
+        streamclose(data->conn, "Disconnect due to timeout");
         *stream_error = TRUE;
       }
       (void)multi_done(data, *result, TRUE);
