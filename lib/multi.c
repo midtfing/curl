@@ -1684,8 +1684,7 @@ static bool multi_handle_timeout(struct Curl_easy *data,
                                  CURLcode *result,
                                  bool connect_timeout)
 {
-  timediff_t timeout_ms;
-  timeout_ms = Curl_timeleft(data, now, connect_timeout);
+  timediff_t timeout_ms = Curl_timeleft(data, now, connect_timeout);
 
   if(timeout_ms < 0) {
     /* Handle timed out */
@@ -1714,17 +1713,19 @@ static bool multi_handle_timeout(struct Curl_easy *data,
               k->bytecount);
       }
     }
-
-    /* Force connection closed if the connection has indeed been used */
-    if(data->mstate > MSTATE_DO) {
-      streamclose(data->conn, "Disconnected with pending data");
-      *stream_error = TRUE;
-    }
     *result = CURLE_OPERATION_TIMEDOUT;
-    (void)multi_done(data, *result, TRUE);
+    if(data->conn) {
+      /* Force connection closed if the connection has indeed been used */
+      if(data->mstate > MSTATE_DO) {
+        streamclose(data->conn, "Disconnected with pending data");
+        *stream_error = TRUE;
+      }
+      (void)multi_done(data, *result, TRUE);
+    }
+    return TRUE;
   }
 
-  return (timeout_ms < 0);
+  return FALSE;
 }
 
 /*
